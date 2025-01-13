@@ -1,0 +1,27 @@
+# Ignora dipendenze del frontend
+/frontend/node_modules
+/frontend/.pnp
+/frontend/.pnp.js
+
+# Ignora la cartella build del frontend (produzione)
+frontend/build
+
+# Ignora dipendenze del backend (se usi Python)
+backend/__pycache__/
+backend/*.pyc
+backend/env/
+backend/.env
+
+# Ignora file di test e copertura
+**/coverage
+**/*.log
+**/.DS_Store
+
+# Ignora altri file temporanei
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
