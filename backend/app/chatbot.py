@@ -610,3 +610,4 @@ def chatbot():
         print(f"[chatbot] General error: {e}")
         return jsonify({"message": "Si è verificato un errore. Per favore, riprova."}), 500
 
+

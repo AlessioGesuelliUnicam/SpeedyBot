@@ -39,6 +39,10 @@
         {
             "question": "Tu (non salire) …………………….. su questo treno, perché rimane in stazione.",
             "solution": "Non salire"
+        },
+        {
+            "question": "(tu - venire) …………………….. sul binario 3, per favore. C’è da scartare un vagone.",
+            "solution": "Vieni"
         }
     ]
 }

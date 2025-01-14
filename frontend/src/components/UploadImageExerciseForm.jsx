@@ -119,10 +119,10 @@ function UploadImageExerciseForm() {
                 />
             </div>
             <div className="mb-4">
-                <label className="block text-gray-700 font-bold mb-2">Description in English:</label>
+                <label className="block text-gray-700 font-bold mb-2">Description in German:</label>
                 <input
                     type="text"
-                    placeholder="Description in English"
+                    placeholder="Description in German"
                     value={descriptionEn}
                     onChange={(e) => setDescriptionEn(e.target.value)}
                     className="w-full border border-gray-300 p-2"

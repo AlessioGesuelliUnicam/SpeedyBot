@@ -1,0 +1,94 @@
+{
+	"info": {
+		"_postman_id": "cf7e827b-122a-4239-b75b-67988d9838e3",
+		"name": "Speedybot",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30747961"
+	},
+	"item": [
+		{
+			"name": "Create exercise_type",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"exerciseType\": \"Recognize Animals\",\n  \"exerciseWithImage\": true\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/api/exercise-types",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"exercise-types"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get exercise-types",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/api/exercise-types",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"exercise-types"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Ollama Test",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"model\": \"llama3\",\n    \"prompt\": \"Test prompt\",\n    \"stream\": false\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:11434/api/generate",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "11434",
+					"path": [
+						"api",
+						"generate"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

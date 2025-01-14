@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 
 function Chatbot() {
-    const [messages, setMessages] = useState([]);
-    const [input, setInput] = useState('');
-    const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
+    const [messages, setMessages] = useState([])
+    const [input, setInput] = useState('')
+    const [isWaitingForResponse, setIsWaitingForResponse] = useState(false)
 
     const fetchWithTimeout = (url, options, timeout = 60000) => {
         return Promise.race([
@@ -12,7 +12,7 @@ function Chatbot() {
                 setTimeout(() => reject(new Error('Request timed out')), timeout)
             )
         ]);
-    };
+    }
 
     const handleSendMessage = async () => {
         if (!input.trim()) return;
@@ -21,15 +21,13 @@ function Chatbot() {
         setMessages((prev) => [...prev, userMessage]);
 
         if (isWaitingForResponse) {
-            // Invia la risposta dell'utente per la valutazione
             await handleUserResponse(input);
         } else {
-            // Invia un messaggio normale al chatbot
             await sendChatbotMessage(input);
         }
 
         setInput('');
-    };
+    }
 
     const sendChatbotMessage = async (message) => {
         try {
@@ -45,25 +43,37 @@ function Chatbot() {
 
             const data = await response.json();
 
-            const botMessage = {
-                sender: 'bot',
-                text: data.message || '',
-                image: data.image || null,
-                question: data.question || null,
-                feedback: data.feedback || null,
-            };
+            if (data.message || data.feedback) {
+                const botMessage = {
+                    sender: 'bot',
+                    text: data.feedback || data.message,
+                    image: data.image || null,
+                };
+                setMessages((prev) => [...prev, botMessage]);
+            }
 
-            setMessages((prev) => [...prev, botMessage]);
-
-            // Se c'è una domanda o immagine, attiva l'attesa della risposta dell'utente
-            if (data.question || data.image) {
+            if (data.next_question) {
+                const questionMessage = {
+                    sender: 'bot',
+                    text: data.next_question,
+                    image: data.image || null,
+                };
+                setMessages((prev) => [...prev, questionMessage]);
+                setIsWaitingForResponse(true);
+            } else if (data.question) {
+                const questionMessage = {
+                    sender: 'bot',
+                    text: data.question,
+                    image: data.image || null,
+                };
+                setMessages((prev) => [...prev, questionMessage]);
                 setIsWaitingForResponse(true);
             }
         } catch (error) {
             console.error('Error:', error);
             setMessages((prev) => [...prev, { sender: 'bot', text: 'Error communicating with server.' }]);
         }
-    };
+    }
 
     const handleUserResponse = async (userResponse) => {
         try {
@@ -79,79 +89,44 @@ function Chatbot() {
 
             const data = await response.json();
 
-            const feedbackMessage = {
-                sender: 'bot',
-                text: data.feedback || 'No feedback received.',
-            };
+            if (data.feedback) {
+                const feedbackMessage = {
+                    sender: 'bot',
+                    text: data.feedback,
+                };
+                setMessages((prev) => [...prev, feedbackMessage]);
+            }
 
-            setMessages((prev) => [...prev, feedbackMessage]);
-
-            // Controlla se l'utente vuole cambiare esercizio
-            if (userResponse.toLowerCase().includes('cambia esercizio')) {
-                setIsWaitingForResponse(false);
-                setMessages((prev) => [
-                    ...prev,
-                    { sender: 'bot', text: 'Ok! Dimmi quale esercizio vuoi fare.' },
-                ]);
+            if (data.next_question) {
+                const questionMessage = {
+                    sender: 'bot',
+                    text: data.next_question,
+                    image: data.image || null,
+                };
+                setMessages((prev) => [...prev, questionMessage]);
+                setIsWaitingForResponse(true);
             } else {
-                // Altrimenti, continua con l'esercizio corrente
-                await continueExercise();
+                setIsWaitingForResponse(false);
             }
         } catch (error) {
             console.error('Error:', error);
             setMessages((prev) => [...prev, { sender: 'bot', text: 'Error evaluating response.' }]);
+            setIsWaitingForResponse(false);
         }
     };
 
-    const continueExercise = async () => {
-        try {
-            const response = await fetchWithTimeout('http://127.0.0.1:5000/chatbot', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: 'continua esercizio' }),
-            });
-
-            if (!response.ok) {
-                console.error('Error: Failed to fetch response for continue exercise.');
-                throw new Error('Failed to fetch');
-            }
-
-            const data = await response.json();
-            console.log('Received data for continue exercise:', data); // LOG
-
-            if (data.error) {
-                setMessages((prev) => [
-                    ...prev,
-                    { sender: 'bot', text: `Errore: ${data.error}` },
-                ]);
-                setIsWaitingForResponse(false);
-                return;
-            }
-
-            const botMessage = {
-                sender: 'bot',
-                text: data.message || '',
-                image: data.image || null,
-                question: data.question || null,
-            };
-
-            setMessages((prev) => [...prev, botMessage]);
-
-            // Mantieni l'attesa della risposta se c'è una domanda o immagine
-            if (data.question || data.image) {
-                setIsWaitingForResponse(true);
-            }
-        } catch (error) {
-            console.error('Error continuing exercise:', error); // LOG
-            setMessages((prev) => [...prev, { sender: 'bot', text: 'Error continuing exercise.' }]);
-        }
-    };
+    const handleRestartBackend = () => {
+        fetch('http://127.0.0.1:5000/api/restart-backend', { method: 'POST' });
+        setTimeout(() => {
+            window.location.reload();
+        }, 1);
+    }
 
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
             handleSendMessage();
         }
-    };
+    }
 
     return (
         <div className="flex flex-col h-screen bg-gray-100">
@@ -165,14 +140,13 @@ function Chatbot() {
                             }`}
                         >
                             <div
-                                className={`max-w-xs rounded-lg p-2 ${
+                                className={`max-w-xs md:max-w-md lg:max-w-lg rounded-lg p-2 ${
                                     msg.sender === 'user'
                                         ? 'bg-blue-500 text-white'
                                         : 'bg-gray-300 text-black'
                                 }`}
                             >
-                                <p>{msg.text}</p>
-                                {/* Renderizza un'immagine se esiste */}
+                                <p className="whitespace-pre-wrap">{msg.text}</p>
                                 {msg.image && (
                                     <img
                                         src={msg.image}
@@ -180,16 +154,12 @@ function Chatbot() {
                                         className="mt-2 rounded-lg max-w-full"
                                     />
                                 )}
-                                {/* Renderizza una domanda se esiste */}
-                                {msg.question && (
-                                    <p className="mt-2 font-semibold">{msg.question}</p>
-                                )}
                             </div>
                         </div>
                     ))}
                 </div>
             </div>
-            <div className="p-4 border-t border-gray-300 bg-white flex">
+            <div className="p-4 border-t border-gray-300 bg-white flex space-x-2">
                 <input
                     type="text"
                     value={input}
@@ -204,9 +174,15 @@ function Chatbot() {
                 >
                     Send
                 </button>
+                <button
+                    onClick={handleRestartBackend}
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+                >
+                    Restart
+                </button>
             </div>
         </div>
-    );
+    )
 }
 
-export default Chatbot;
+export default Chatbot
