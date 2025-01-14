@@ -7,22 +7,22 @@ app = create_app()
 @app.route("/api/restart-backend", methods=["POST"])
 def restart_backend():
     try:
-        # Clear del terminale
+        # Clear the terminal
         if platform.system() == "Windows":
             os.system("cls")
         else:
             os.system("clear")
 
-        # Riavvio del server
+        # Restart the server
         os.execl(sys.executable, sys.executable, *sys.argv)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    return jsonify({"message": "Riavvio in corso..."})
+    return jsonify({"message": "Restarting..."})
 
 if __name__ == "__main__":
     app.run(debug=True)
 
-# Avvia l'applicazione
+# Start the application
 if __name__ == "__main__":
     app.run(debug=True)
 

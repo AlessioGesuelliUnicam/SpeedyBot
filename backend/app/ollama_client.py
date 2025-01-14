@@ -9,7 +9,7 @@ class OllamaAPI:
 
     def send_request(self, prompt, stream=True, timeout=60):
         """
-        Invia una richiesta all'API Ollama e restituisce la risposta come stringa.
+        Sends a request to the Ollama API and returns the response as a string.
         """
         payload = {"model": self.model, "prompt": prompt}
         try:
@@ -29,7 +29,7 @@ class OllamaAPI:
 
     def _parse_stream_response(self, response):
         """
-        Analizza la risposta in streaming e la combina in una stringa unica.
+        Parses the streaming response and combines it into a single string.
         """
         full_response = ""
         for line in response.iter_lines():

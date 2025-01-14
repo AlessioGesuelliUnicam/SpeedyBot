@@ -1,41 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 
 function CreateExerciseType() {
-    const [exerciseType, setExerciseType] = useState('');
-    const [exerciseWithImage, setExerciseWithImage] = useState(false);
-    const [prompt, setPrompt] = useState(''); // Nuovo stato per il prompt
-    const [message, setMessage] = useState('');
+    const [exerciseType, setExerciseType] = useState('')
+    const [exerciseWithImage, setExerciseWithImage] = useState(false)
+    const [message, setMessage] = useState('')
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
+        e.preventDefault()
 
         try {
             const response = await fetch('http://127.0.0.1:5000/api/exercise-types-with-image', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     exerciseType,
                     exerciseWithImage,
-                    prompt, // Includi il prompt nella richiesta
-                }),
-            });
+                    // prompt is intentionally omitted as it will be used in the future
+                })
+            })
 
             if (!response.ok) {
-                const errorData = await response.json();
-                setMessage(`Error: ${errorData.error}`);
+                const errorData = await response.json()
+                setMessage(`Error: ${errorData.error}`)
             } else {
-                setMessage('ExerciseType created successfully!');
-                setExerciseType(''); // Reset dei campi
-                setExerciseWithImage(false);
-                setPrompt(''); // Reset del prompt
+                setMessage('ExerciseType created successfully!')
+                setExerciseType('') // Reset the fields
+                setExerciseWithImage(false)
             }
         } catch (error) {
-            console.error('Error:', error);
-            setMessage('An error occurred. Please try again.');
+            console.error('Error:', error)
+            setMessage('An error occurred. Please try again.')
         }
-    };
+    }
 
     return (
         <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -54,7 +52,9 @@ function CreateExerciseType() {
                             required
                         />
                     </div>
-                    <div className="mb-4">
+
+                    {/* Prompt field is hidden for now and will be implemented in the future */}
+                    {/* <div className="mb-4">
                         <label className="block text-gray-700 font-bold mb-2">Prompt</label>
                         <textarea
                             value={prompt}
@@ -63,7 +63,8 @@ function CreateExerciseType() {
                             className="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             required
                         ></textarea>
-                    </div>
+                    </div> */}
+
                     <div className="mb-4">
                         <label className="flex items-center">
                             <input
@@ -84,7 +85,7 @@ function CreateExerciseType() {
                 </form>
             </div>
         </div>
-    );
+    )
 }
 
-export default CreateExerciseType;
+export default CreateExerciseType

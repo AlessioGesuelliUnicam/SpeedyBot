@@ -2,16 +2,16 @@ import React, { useState, useEffect } from 'react';
 
 function UploadTextExerciseForm() {
     const [exerciseTypeId, setExerciseTypeId] = useState('');
-    const [exerciseOptions, setExerciseOptions] = useState([]); // Lista degli exerciseType
+    const [exerciseOptions, setExerciseOptions] = useState([]); // List of exercise types
     const [question, setQuestion] = useState('');
     const [answer, setAnswer] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
 
     useEffect(() => {
-        // Ottieni gli exerciseType con exerciseWithImage=False dall'API
+        // Fetch exercise types with exerciseWithImage=False from the API
         const fetchExerciseTypes = async () => {
             try {
-                const response = await fetch('http://127.0.0.1:5000/exercise-types-no-image'); // Endpoint specifico
+                const response = await fetch('http://127.0.0.1:5000/exercise-types-no-image'); // Specific endpoint
                 const data = await response.json();
                 setExerciseOptions(data);
             } catch (error) {
@@ -29,7 +29,7 @@ function UploadTextExerciseForm() {
             exercise_type_id: exerciseTypeId,
             question,
             answer,
-        };
+        }
 
         try {
             const response = await fetch('http://127.0.0.1:5000/upload-text-exercise', {
@@ -38,7 +38,7 @@ function UploadTextExerciseForm() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(payload),
-            });
+            })
 
             if (!response.ok) {
                 throw new Error('Upload failed');
@@ -47,16 +47,16 @@ function UploadTextExerciseForm() {
             const data = await response.json();
             console.log('Success:', data);
 
-            setExerciseTypeId('');
-            setQuestion('');
-            setAnswer('');
+            setExerciseTypeId('')
+            setQuestion('')
+            setAnswer('')
             setSuccessMessage('Text exercise added successfully!');
 
             setTimeout(() => setSuccessMessage(''), 3000);
         } catch (error) {
             console.error('Error:', error);
         }
-    };
+    }
 
     return (
         <form className="p-4" onSubmit={handleSubmit}>
@@ -111,7 +111,7 @@ function UploadTextExerciseForm() {
                 Upload
             </button>
         </form>
-    );
+    )
 }
 
-export default UploadTextExerciseForm;
+export default UploadTextExerciseForm

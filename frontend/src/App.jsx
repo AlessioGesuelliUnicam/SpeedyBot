@@ -14,7 +14,7 @@ function App() {
                 {/* Sidebar */}
                 <Sidebar/>
 
-                {/* Contenuto principale */}
+                {/* Main content */}
                 <div className="flex-grow p-4 overflow-y-auto">
                     <Routes>
                         <Route path="/" element={<Home/>}/>
@@ -26,7 +26,7 @@ function App() {
                 </div>
             </div>
         </Router>
-    );
+    )
 }
 
-export default App;
+export default App

@@ -9,7 +9,7 @@ import PyPDF2
 
 chatbot_bp = Blueprint('chatbot', __name__)
 
-# Inizializza il client di Ollama
+# Initialize the Ollama client
 ollama_client = OllamaAPI()
 
 DOCUMENTS = load_documents()
@@ -48,10 +48,10 @@ class GlobalStateManager:
         """Prepare the next question for the exercise if applicable."""
         if self.current_exercise:
             print(f"[GlobalStateManager] Preparing next question for {self.current_exercise}.")
-            # Example logic to fetch a next question
+            # Example logic to fetch the next question
             self.current_question = {
-                "expected_response": "gatto",
-                "image_url": "/static/uploads/animals/gatto.jpg",
+                "expected_response": "cat",
+                "image_url": "/static/uploads/animals/cat.jpg",
                 "animal_name": "cat",
             }
             return self.current_question
@@ -75,7 +75,7 @@ class GlobalStateManager:
 
     def set_pending_exercise(self, exercise_type):
         if self.current_exercise:
-            raise ValueError("Un esercizio è già in corso. Termina o annulla prima di iniziarne uno nuovo.")
+            raise ValueError("An exercise is already in progress. Finish or cancel it before starting a new one.")
         self.pending_exercise = exercise_type
         print(f"[GlobalStateManager] Pending exercise set to: {self.pending_exercise}")
 
@@ -101,7 +101,7 @@ class GlobalStateManager:
 
 global_state_manager = GlobalStateManager()
 
-def handle_exception(e, message="Si è verificato un errore."):
+def handle_exception(e, message="An error occurred."):
     print(f"[Error] {message}: {e}")
     return jsonify({"error": message, "details": str(e)}), 500
 
@@ -120,7 +120,7 @@ def extract_json_from_response(response):
         print(f"[extract_json_from_response] Error: {e}")
         return {
             "intent": "general",
-            "response": "Non ho capito la tua domanda.",
+            "response": "I didn't understand your question.",
             "exercise_type": None,
         }
 
@@ -142,9 +142,9 @@ def identify_intent(user_message, learning_context=None):
 
         Tasks:
         1. Identify the user's intent:
-           - "general": for casual conversations (e.g., "Ciao", "Come stai?")
-           - "learn": for learning technical Italian (e.g., "Come si dice 'Hund' in italiano?")
-           - "exercise": for practicing language skills (e.g., "Voglio fare un esercizio").
+           - "general": for casual conversations (e.g., "Hi", "How are you?")
+           - "learn": for learning technical Italian (e.g., "How do you say 'dog' in Italian?")
+           - "exercise": for practicing language skills (e.g., "I want to do an exercise").
              Available exercises: {exercises_type_str}
 
         2. If the intent is unclear, suggest asking more specific questions.
@@ -170,310 +170,315 @@ def identify_intent(user_message, learning_context=None):
         print(f"[identify_intent] Error: {e}")
         return {
             "intent": "general",
-            "response": "Non ho capito bene. Puoi ripetere o specificare meglio?",
+            "response": "I didn't understand well. Could you repeat or specify better?",
             "exercise_type": None,
         }
 
-def extract_structured_data(response):
-    """
-    Estrae dati strutturati (intent, response, exercise_type) da una risposta in formato testo libero.
 
-    Args:
-        response (str): La risposta fornita dall'LLM.
-
-    Returns:ba
-        dict: Dati strutturati contenenti intent, response e exercise_type.
-    """
-    try:
-        intent_match = re.search(r"\*\*Intent:\*\* (.*?)\n", response)
-        response_match = re.search(r"\*\*Response:\*\* (.*?)\n", response)
-        exercise_type_match = re.search(r"\*\*Exercise_type:\*\* (.*?)\n", response)
-
-        intent = intent_match.group(1).strip() if intent_match else "general"
-        llm_response = response_match.group(1).strip() if response_match else "Non ho capito la tua domanda."
-        exercise_type = exercise_type_match.group(1).strip() if exercise_type_match else None
-
-        return {
-            "intent": intent,
-            "response": llm_response,
-            "exercise_type": exercise_type,
-        }
     except Exception as e:
+
         print(f"[extract_structured_data] Error: {e}")
+
         return {
+
             "intent": "general",
-            "response": "Non ho capito la tua domanda.",
+
+            "response": "I didn't understand your question.",
+
             "exercise_type": None,
+
         }
+
 
 def load_exercise_content(exercise_type):
     exercise_type_normalized = exercise_type.lower().replace(' ', '_')
+
     file_path = os.path.join(current_app.root_path, 'static', 'exercises', exercise_type_normalized)
 
     print(f"[load_exercise_content] Generating path: {file_path}")
 
     try:
+
         if os.path.exists(f"{file_path}.json"):
+
             with open(f"{file_path}.json", 'r', encoding='utf-8') as f:
+
                 return json.load(f)
+
         elif os.path.exists(f"{file_path}.docx"):
+
             document = Document(f"{file_path}.docx")
+
             return "\n".join([para.text for para in document.paragraphs])
+
         elif os.path.exists(f"{file_path}.pdf"):
+
             with open(f"{file_path}.pdf", 'rb') as f:
+
                 reader = PyPDF2.PdfReader(f)
+
                 return "\n".join([page.extract_text() for page in reader.pages])
 
         raise FileNotFoundError(f"File for exercise '{exercise_type}' not found.")
+
     except FileNotFoundError as e:
+
         print(f"[load_exercise_content] File not found: {e}")
+
         return None
+
     except Exception as e:
+
         print(f"[load_exercise_content] Error loading content: {e}")
+
         return None
+
 
 def handle_learning_request(user_message, documents):
     """
+
     Handle learning requests by searching documents and generating a response.
 
+
     Args:
+
         user_message (str): User's learning query
+
         documents (dict): Loaded documents
 
+
     Returns:
+
         dict: Learning response with found information
+
     """
+
     # Search documents for relevant information
+
     document_search_result = search_documents(user_message, documents)
 
     # Use Ollama to generate a comprehensive response
+
     prompt = f"""
+
     Context: You are helping a German-speaking train driver learn technical Italian.
+
 
     Document search result: {document_search_result}
 
+
     User query: {user_message}
 
+
     Generate a clear, concise explanation that helps the user understand the topic,
+
     incorporating information from the document search if possible.
+
     """
 
     try:
+
         llm_response = ollama_client.send_request(prompt)
+
         return {"message": llm_response}
+
     except Exception as e:
+
         print(f"[handle_learning_request] Error: {e}")
+
         return {"message": "I'm having trouble finding information about that. Could you rephrase your question?"}
+
 
 def evaluate_with_llm(user_response, expected_response):
     """
-    Utilizza un LLM per valutare la somiglianza tra la risposta dell'utente e quella attesa.
+
+    Use an LLM to evaluate the similarity between the user's response and the expected response.
+
 
     Args:
-        user_response (str): La risposta fornita dall'utente.
-        expected_response (str): La risposta attesa.
+
+        user_response (str): The response provided by the user.
+
+        expected_response (str): The expected response.
+
 
     Returns:
-        dict: Un dizionario contenente il punteggio di somiglianza e un suggerimento.
+
+        dict: A dictionary containing the similarity score and feedback.
+
     """
+
     prompt = f"""
-    Sei un assistente didattico che valuta risposte in italiano. 
-    Confronta la risposta dell'utente con quella attesa e determina se la risposta dell'utente è corretta o quasi corretta.
 
-    Risposta attesa: "{expected_response}"
-    Risposta dell'utente: "{user_response}"
+    You are a teaching assistant evaluating answers in Italian. 
 
-    Valuta:
-    1. La correttezza semantica (la risposta ha lo stesso significato?).
-    2. Errori grammaticali minori (sono accettabili se non cambiano il significato).
+    Compare the user's response with the expected one and determine if it is correct or almost correct.
 
-    Rispondi in JSON con il seguente formato:
+
+    Expected response: "{expected_response}"
+
+    User's response: "{user_response}"
+
+
+    Evaluate:
+
+    1. Semantic correctness (does the response have the same meaning?).
+
+    2. Minor grammatical errors (acceptable if they do not change the meaning).
+
+
+    Respond in JSON with the following format:
+
     {{
+
         "correct": true|false,
-        "feedback": "Commento sulla risposta (cosa è corretto o cosa manca)."
+
+        "feedback": "Comment about the response (what is correct or missing)."
+
     }}
+
     """
+
     try:
+
         response = ollama_client.send_request(prompt)
-        return json.loads(response)  # Parsing del JSON restituito
+
+        return json.loads(response)  # Parse the returned JSON
+
     except Exception as e:
+
         print(f"[evaluate_with_llm] Error: {e}")
-        return {"correct": False, "feedback": "Errore nella valutazione con LLM."}
+
+        return {"correct": False, "feedback": "Error evaluating with LLM."}
+
 
 def generate_textual_exercise(exercise_type):
     try:
+
         content = load_exercise_content(exercise_type)
+
         if not content or not isinstance(content, dict):
-            raise ValueError(f"Formato non valido per il file dell'esercizio '{exercise_type}'.")
+            raise ValueError(f"Invalid format for exercise file '{exercise_type}'.")
 
         key = exercise_type.lower().replace(" ", "_")
+
         if isinstance(content, dict) and key in content:
+
             questions = content[key]
+
             if not questions:
-                raise ValueError("Nessuna domanda trovata nel file JSON.")
+                raise ValueError("No questions found in the JSON file.")
 
             question = random.choice(questions)
 
-            # Debug del contenuto della domanda
+            # Debug the question content
+
             print(f"[generate_textual_exercise] Selected question: {question}")
 
             return {
-                "question": question.get("question", "Domanda non trovata."),
-                "answer": question.get("solution", "Risposta non trovata.").strip().lower()
+
+                "question": question.get("question", "Question not found."),
+
+                "answer": question.get("solution", "Answer not found.").strip().lower()
+
             }
 
-        raise ValueError(f"Formato del contenuto per '{exercise_type}' non supportato.")
+        raise ValueError(f"Unsupported content format for '{exercise_type}'.")
+
     except Exception as e:
+
         print(f"[generate_textual_exercise] Error: {e}")
-        return {"question": "Non sono riuscito a generare un esercizio. Riprova più tardi.", "answer": ""}
+
+        return {"question": "I couldn't generate an exercise. Please try again later.", "answer": ""}
+
 
 def start_exercise(exercise, prompt=None):
     try:
+
         print(f"[start_exercise] Starting exercise: {exercise}")
+
         if not exercise:
-            raise ValueError("L'esercizio specificato non è valido.")
+            raise ValueError("The specified exercise is invalid.")
 
         exercise_type = exercise.get("exerciseType") or exercise.get("type")
-        if not exercise_type:
-            raise KeyError(f"Il campo 'type' o 'exerciseType' è mancante. Dati ricevuti: {exercise}")
 
-        prompt = prompt or exercise.get("prompt", "Inizia l'esercizio!")
+        if not exercise_type:
+            raise KeyError(f"The 'type' or 'exerciseType' field is missing. Received data: {exercise}")
+
+        prompt = prompt or exercise.get("prompt", "Start the exercise!")
+
         print(f"[start_exercise] Exercise type: {exercise_type}, Prompt: {prompt}")
 
-        # Gestione per esercizi con immagini
-        if exercise.get("exerciseWithImage", False):
-            print("[start_exercise] Detected image-based exercise.")
-            image_entry = ExerciseWithImage.query.filter_by(exercise_type_id=exercise["id"]).order_by(
-                db.func.random()).first()
-            if not image_entry:
-                raise ValueError("Nessuna immagine disponibile per questo esercizio.")
+        # Handling image-based exercises
 
-            # Imposta la domanda corrente nel GlobalStateManager
+        if exercise.get("exerciseWithImage", False):
+
+            print("[start_exercise] Detected image-based exercise.")
+
+            image_entry = ExerciseWithImage.query.filter_by(exercise_type_id=exercise["id"]).order_by(
+
+                db.func.random()).first()
+
+            if not image_entry:
+                raise ValueError("No images available for this exercise.")
+
+            # Set the current question in the GlobalStateManager
+
             global_state_manager.set_current_question({
+
                 "expected_response": image_entry.description_it,
+
                 "image_url": image_entry.file_path,
+
                 "animal_name": image_entry.description_en,
+
             })
 
-            # Prepara il messaggio per l'utente
+            # Prepare the message for the user
+
             return {
-                "message": f"Guarda l'immagine e rispondi: "
+
+                "message": f"Look at the image and answer: "
+
                            f"\"Wie sagt man '{image_entry.description_en}' auf Italienisch?\"",
+
                 "image": url_for('static', filename=image_entry.file_path.split('static/')[-1], _external=True),
+
             }
 
-        # Gestione per esercizi testuali
+        # Handling textual exercises
+
         print("[start_exercise] Detected textual exercise.")
+
         exercise_data = generate_textual_exercise(exercise_type)
+
         if not exercise_data or "question" not in exercise_data:
-            raise ValueError("Errore nella generazione dell'esercizio testuale.")
+            raise ValueError("Error generating textual exercise.")
 
         question = exercise_data.get("question", "")
+
         correct_answer = exercise_data.get("answer", "")
+
         print(f"[start_exercise] Generated question: {question}, Expected answer: {correct_answer}")
 
-        # Imposta la domanda corrente
+        # Set the current question
+
         global_state_manager.set_current_question({
+
             "expected_response": correct_answer,
+
             "question": question,
+
         })
 
-        return {"message": f"Domanda: {question}", "image": None}
+        return {"message": f"Question: {question}", "image": None}
+
 
     except Exception as e:
+
         print(f"[start_exercise] Error: {e}")
-        return {"error": f"Errore durante l'avvio dell'esercizio: {str(e)}"}
 
-
-@chatbot_bp.route('/evaluate', methods=['POST'])
-def evaluate_response():
-    data = request.json
-    user_response = data.get('response', '').strip().lower()
-
-    # Funzione per normalizzare il testo
-    def normalize_text(text):
-        import unicodedata
-        return ''.join(
-            c for c in unicodedata.normalize('NFD', text) if unicodedata.category(c) != 'Mn'
-        ).strip().lower()
-
-    # Recupera la domanda corrente
-    current_question = global_state_manager.current_question
-    if not current_question:
-        return jsonify({"message": "Nessuna domanda attiva al momento."}), 400
-
-    # Normalizza le risposte
-    expected_response = normalize_text(current_question.get('expected_response', '').strip())
-    user_response_normalized = normalize_text(user_response)
-
-    # Debugging delle risposte
-    print(f"[evaluate_response] User response: '{user_response}', Expected response: '{expected_response}'")
-
-    # Risposta corretta
-    if user_response_normalized == expected_response:
-        feedback = f"✔️ Corretto! La risposta è '{expected_response}'."
-
-        # Esercizio basato su immagini
-        if global_state_manager.current_exercise.get('exerciseWithImage', False):
-            print("[evaluate_response] Image-based exercise detected, loading next image.")
-            # Carica una nuova immagine casuale
-            image_entry = ExerciseWithImage.query.filter_by(
-                exercise_type_id=global_state_manager.current_exercise['id']
-            ).order_by(db.func.random()).first()
-
-            if not image_entry:
-                # Termina l'esercizio se non ci sono altre immagini
-                global_state_manager.reset_current_exercise()
-                return jsonify({
-                    "feedback": feedback,
-                    "message": "Non ci sono altre immagini disponibili per questo esercizio. Vuoi scegliere un altro esercizio?"
-                })
-
-            # Imposta la nuova domanda corrente
-            global_state_manager.set_current_question({
-                "expected_response": image_entry.description_it,
-                "image_url": image_entry.file_path,
-                "animal_name": image_entry.description_en,
-            })
-
-            return jsonify({
-                "feedback": feedback,
-                "next_question": (
-                    f"Guarda l'immagine e rispondi: "
-                    f"\"Wie sagt man '{image_entry.description_en}' auf Italienisch?\""
-                ),
-                "image": url_for('static', filename=image_entry.file_path.split('static/')[-1], _external=True),
-            })
-
-        # Esercizio testuale
-        else:
-            print("[evaluate_response] Textual exercise detected, generating next question.")
-            exercise_type = global_state_manager.current_exercise.get('type')
-            next_question = generate_textual_exercise(exercise_type)
-
-            if next_question and "question" in next_question:
-                global_state_manager.set_current_question({
-                    "expected_response": next_question.get("answer", ""),
-                    "question": next_question.get("question", ""),
-                })
-                return jsonify({
-                    "feedback": feedback,
-                    "next_question": next_question.get("question", ""),
-                })
-
-            # Se non ci sono domande disponibili
-            global_state_manager.reset_current_exercise()
-            return jsonify({
-                "feedback": feedback,
-                "message": "Non ci sono altre domande per questo esercizio. Vuoi scegliere un altro esercizio?"
-            })
-
-    # Risposta errata
-    else:
-        return jsonify({
-            "feedback": f"❌ Errato. La risposta corretta era '{expected_response}'.",
-            "question": current_question.get("question", ""),
-        })
+        return {"error": f"Error starting exercise: {str(e)}"}
 
 @chatbot_bp.route('/chatbot', methods=['POST'])
 def chatbot():

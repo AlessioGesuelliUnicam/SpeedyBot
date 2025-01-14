@@ -1,48 +1,48 @@
-import React, { useState, useEffect } from 'react';
-import { useDropzone } from 'react-dropzone';
+import React, { useState, useEffect } from 'react'
+import { useDropzone } from 'react-dropzone'
 
 function UploadImageExerciseForm() {
-    const [file, setFile] = useState(null);
-    const [exerciseType, setExerciseType] = useState('');
-    const [exerciseOptions, setExerciseOptions] = useState([]); // Lista degli exerciseType
-    const [descriptionIt, setDescriptionIt] = useState('');
-    const [descriptionEn, setDescriptionEn] = useState('');
-    const [preview, setPreview] = useState(null);
-    const [successMessage, setSuccessMessage] = useState('');
+    const [file, setFile] = useState(null)
+    const [exerciseType, setExerciseType] = useState('')
+    const [exerciseOptions, setExerciseOptions] = useState([]); // List of exercise types
+    const [descriptionIt, setDescriptionIt] = useState('')
+    const [descriptionEn, setDescriptionEn] = useState('')
+    const [preview, setPreview] = useState(null)
+    const [successMessage, setSuccessMessage] = useState('')
 
     useEffect(() => {
-        // Ottieni gli exerciseType dall'API
+        // Fetch exercise types from the API
         const fetchExerciseTypes = async () => {
             try {
-                const response = await fetch('http://127.0.0.1:5000/exercise-types-with-image');
-                const data = await response.json();
-                setExerciseOptions(data);
+                const response = await fetch('http://127.0.0.1:5000/exercise-types-with-image')
+                const data = await response.json()
+                setExerciseOptions(data)
             } catch (error) {
-                console.error('Error fetching exercise types:', error);
+                console.error('Error fetching exercise types:', error)
             }
-        };
-
-        fetchExerciseTypes();
-    }, []);
-
-    const onDrop = (acceptedFiles) => {
-        const selectedFile = acceptedFiles[0];
-        setFile(selectedFile);
-        setPreview(URL.createObjectURL(selectedFile));
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        if (!file) {
-            return;
         }
 
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('exercise_type', exerciseType);
-        formData.append('description_it', descriptionIt);
-        formData.append('description_en', descriptionEn);
+        fetchExerciseTypes()
+    }, [])
+
+    const onDrop = (acceptedFiles) => {
+        const selectedFile = acceptedFiles[0]
+        setFile(selectedFile)
+        setPreview(URL.createObjectURL(selectedFile))
+    }
+
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+
+        if (!file) {
+            return
+        }
+
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('exercise_type', exerciseType)
+        formData.append('description_it', descriptionIt)
+        formData.append('description_en', descriptionEn)
 
         try {
             const response = await fetch('http://127.0.0.1:5000/upload-image-exercise', {
@@ -51,29 +51,29 @@ function UploadImageExerciseForm() {
             });
 
             if (!response.ok) {
-                throw new Error('Upload failed');
+                throw new Error('Upload failed')
             }
 
-            const data = await response.json();
-            console.log('Success:', data);
+            const data = await response.json()
+            console.log('Success:', data)
 
             setFile(null);
-            setExerciseType('');
-            setDescriptionIt('');
-            setDescriptionEn('');
-            setPreview(null);
-            setSuccessMessage('File uploaded successfully!');
+            setExerciseType('')
+            setDescriptionIt('')
+            setDescriptionEn('')
+            setPreview(null)
+            setSuccessMessage('File uploaded successfully!')
 
             setTimeout(() => setSuccessMessage(''), 3000);
         } catch (error) {
             console.error('Error:', error);
         }
-    };
+    }
 
     const { getRootProps, getInputProps } = useDropzone({
         onDrop,
         accept: 'image/*',
-    });
+    })
 
     return (
         <form className="p-4" onSubmit={handleSubmit}>
@@ -142,7 +142,7 @@ function UploadImageExerciseForm() {
                 Upload
             </button>
         </form>
-    );
+    )
 }
 
-export default UploadImageExerciseForm;
+export default UploadImageExerciseForm
