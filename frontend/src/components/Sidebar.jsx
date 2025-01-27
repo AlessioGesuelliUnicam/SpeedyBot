@@ -47,6 +47,24 @@ function Sidebar() {
                             Upload Esercizi con immagini
                         </NavLink>
                     </li>
+                    <li>
+                        <NavLink
+                            to="/exercises_with_images_manager"
+                            className="block px-4 py-2 rounded hover:bg-gray-700"
+                            activeClassName="bg-gray-700"
+                        >
+                            Manager degli Esercizi con immagini
+                        </NavLink>
+                    </li>
+                    <li>
+                        <NavLink
+                            to="/text_exercise_manager"
+                            className="block px-4 py-2 rounded hover:bg-gray-700"
+                            activeClassName="bg-gray-700"
+                        >
+                            Manager degli Esercizi con testo
+                        </NavLink>
+                    </li>
                 </ul>
             </nav>
         </div>

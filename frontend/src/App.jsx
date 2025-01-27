@@ -6,7 +6,8 @@ import Chatbot from './components/Chatbot'
 import ExerciseType from "./components/ExerciseType"
 import UploadTextExerciseForm from "./components/UploadTextExerciseForm"
 import Home from "./components/Home"
-
+import ImageExercisesManager from "./components/ImageExercisesManager"
+import TextExercisesManager from "./components/TextExercisesManager"
 function App() {
     return (
         <Router>
@@ -22,6 +23,8 @@ function App() {
                         <Route path="/chatbot" element={<Chatbot/>}/>
                         <Route path="/ExerciseType" element={<ExerciseType/>}/>
                         <Route path="/upload_text_exercise" element={<UploadTextExerciseForm/>}/>
+                        <Route path="/exercises_with_images_manager" element={<ImageExercisesManager/>}/>
+                        <Route path="/text_exercise_manager" element={<TextExercisesManager/>}/>
                     </Routes>
                 </div>
             </div>

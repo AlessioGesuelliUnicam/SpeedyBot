@@ -20,7 +20,7 @@ def create_app():
         if request.method == "OPTIONS":
             response = app.make_response("")  # Risposta vuota
             response.headers.add("Access-Control-Allow-Origin", "http://localhost:3000")
-            response.headers.add("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+            response.headers.add("Access-Control-Allow-Methods", "GET, POST, OPTIONS, DELETE")
             response.headers.add("Access-Control-Allow-Headers", "Content-Type, Authorization")
             return response
 
@@ -37,12 +37,14 @@ def create_app():
 
     # Registra i blueprint delle rotte
     from app.routes.upload import upload_bp
-    from app.chatbot import chatbot_bp  # Importa il blueprint del chatbot
-    from app.routes.exercise_type import exercise_type_bp # Importa il blueprint del tipo di esercizio
+    from app.chatbot import chatbot_bp
+    from app.routes.exercise_type import exercise_type_bp
+    from app.routes.materials import materials_bp  # Importa il blueprint dei materiali
 
     app.register_blueprint(upload_bp)
-    app.register_blueprint(chatbot_bp)  # Registra il blueprint del chatbot
-    app.register_blueprint(exercise_type_bp)  # Registra il blueprint del tipo di esercizio
+    app.register_blueprint(chatbot_bp)
+    app.register_blueprint(exercise_type_bp)
+    app.register_blueprint(materials_bp, url_prefix='/api')  # Registra il blueprint dei materiali con prefisso '/api'
 
     # Route per servire i file dalla cartella uploads
     @app.route('/uploads/<filename>')
