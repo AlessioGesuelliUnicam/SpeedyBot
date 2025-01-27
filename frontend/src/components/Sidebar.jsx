@@ -31,24 +31,6 @@ function Sidebar() {
                     </li>
                     <li>
                         <NavLink
-                            to="/upload_text_exercise"
-                            className="block px-4 py-2 rounded hover:bg-gray-700"
-                            activeClassName="bg-gray-700"
-                        >
-                            Upload Esercizi con testo
-                        </NavLink>
-                    </li>
-                    <li>
-                        <NavLink
-                            to="/upload_image_exercise"
-                            className="block px-4 py-2 rounded hover:bg-gray-700"
-                            activeClassName="bg-gray-700"
-                        >
-                            Upload Esercizi con immagini
-                        </NavLink>
-                    </li>
-                    <li>
-                        <NavLink
                             to="/exercises_with_images_manager"
                             className="block px-4 py-2 rounded hover:bg-gray-700"
                             activeClassName="bg-gray-700"

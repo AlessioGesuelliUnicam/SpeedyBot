@@ -20,7 +20,7 @@ def create_app():
         if request.method == "OPTIONS":
             response = app.make_response("")  # Risposta vuota
             response.headers.add("Access-Control-Allow-Origin", "http://localhost:3000")
-            response.headers.add("Access-Control-Allow-Methods", "GET, POST, OPTIONS, DELETE")
+            response.headers.add("Access-Control-Allow-Methods", "GET, POST, OPTIONS, DELETE, PUT")
             response.headers.add("Access-Control-Allow-Headers", "Content-Type, Authorization")
             return response
 
