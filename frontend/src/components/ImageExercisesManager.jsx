@@ -134,7 +134,7 @@ function MaterialsWithImagesManager() {
                             {group.materials.map((material) => (
                                 <div
                                     key={material.id}
-                                    className="relative border p-2 rounded-lg shadow-md text-center bg-gray-50"
+                                    className="relative border p-2 rounded-lg shadow-md text-center bg-gray-50 w-[215px] h-[260px]"
                                 >
                                     <img
                                         src={material.filePath}

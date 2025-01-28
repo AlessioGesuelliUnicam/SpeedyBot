@@ -1,5 +1,8 @@
-from flask import Blueprint, request, jsonify
-from app.models import ExerciseType
+import json
+import os
+
+from flask import Blueprint, request, jsonify, current_app
+from app.models import ExerciseType, ExerciseWithImage
 from app import db
 from datetime import datetime
 
@@ -10,21 +13,31 @@ def create_exercise_type():
     data = request.get_json()
     exercise_type = data.get('exerciseType')
     exercise_with_image = data.get('exerciseWithImage', False)
-    prompt = data.get('prompt')  # Aggiunto per il prompt
+    prompt = data.get('prompt', "")  # Valore di default: stringa vuota
 
     if not exercise_type:
         return jsonify({'error': 'exerciseType is required'}), 400
 
-    if not prompt:
-        return jsonify({'error': 'prompt is required'}), 400
-
+    # Crea un nuovo record nel database
     new_exercise_type = ExerciseType(
         exerciseType=exercise_type,
         exerciseWithImage=exercise_with_image,
-        prompt=prompt  # Associa il valore del prompt
+        prompt=prompt  # Usa il valore fornito o il default ""
     )
     db.session.add(new_exercise_type)
     db.session.commit()
+
+    # Trasforma l'exerciseType in un nome di file
+    exercise_type_filename = exercise_type.lower().replace(' ', '_')
+    file_path = os.path.join(current_app.root_path, 'static', 'exercises', f"{exercise_type_filename}.json")
+
+    # Crea la directory se non esiste
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+    # Controlla se il file esiste, altrimenti lo crea
+    if not os.path.exists(file_path):
+        with open(file_path, 'w', encoding='utf-8') as file:
+            json.dump({exercise_type_filename: []}, file)
 
     return jsonify({'message': 'ExerciseType created successfully'}), 201
 
@@ -80,7 +93,28 @@ def delete_exercise_type(id):
     if not exercise_type:
         return jsonify({'error': 'ExerciseType not found'}), 404
 
-    db.session.delete(exercise_type)
-    db.session.commit()
-    return jsonify({'message': 'ExerciseType deleted successfully'}), 200
+    try:
+        # Rimuovi il file JSON collegato
+        exercise_type_filename = exercise_type.exerciseType.lower().replace(' ', '_')
+        json_file_path = os.path.join(current_app.root_path, 'static', 'exercises', f"{exercise_type_filename}.json")
+        if os.path.exists(json_file_path):
+            os.remove(json_file_path)
+
+        # Rimuovi i file immagine collegati, se esistono
+        if exercise_type.exerciseWithImage:
+            image_records = ExerciseWithImage.query.filter_by(exercise_type_id=id).all()
+            for image_record in image_records:
+                image_path = os.path.join(current_app.root_path, 'static', image_record.file_path)
+                if os.path.exists(image_path):
+                    os.remove(image_path)
+                db.session.delete(image_record)  # Rimuovi il record dal database
+
+        # Elimina l'esercizio dal database
+        db.session.delete(exercise_type)
+        db.session.commit()
+
+        return jsonify({'message': 'ExerciseType and related files deleted successfully'}), 200
+    except Exception as e:
+        print(f"[delete_exercise_type] Error: {e}")
+        return jsonify({'error': 'An error occurred while deleting the exercise type and files.'}), 500
 
