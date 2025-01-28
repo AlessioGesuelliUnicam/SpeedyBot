@@ -1,0 +1,48 @@
+{
+    "coniuga_con_l'imperativo": [
+        {
+            "question": "(tu - venire) …………………….. sul binario 3, per favore. C’è da scartare un vagone.",
+            "solution": "Vieni"
+        },
+        {
+            "question": "(voi - venire) …………………….. con me fino a Biasca. Poi potete prendere la coincidenza con l’autobus.",
+            "solution": "Venite"
+        },
+        {
+            "question": "(tu - fare) …………………….. la prova dei freni, altrimenti non possiamo partire in orario.",
+            "solution": "Fai"
+        },
+        {
+            "question": "(voi - fare) …………………….. quello che vi dice il controllore del treno. È meglio viaggiare con il biglietto.",
+            "solution": "Fate"
+        },
+        {
+            "question": "(Lei - tenere) …………………….. il biglietto fino all’arrivo a Bellinzona. Forse ci sono dei nuovi controlli.",
+            "solution": "Tenga"
+        },
+        {
+            "question": "(voi - avere) …………………….. pazienza! Ci vogliono ancora tre ore per arrivare a Basilea!",
+            "solution": "Abbiate"
+        },
+        {
+            "question": "(Lei - sapere) …………………….. che per Chiasso ci vuole ancora circa un’ora di viaggio.",
+            "solution": "Sappia"
+        },
+        {
+            "question": "(Lei - andare) …………………….. tutto dritto; poi di fronte c’è la biglietteria.",
+            "solution": "Vada"
+        },
+        {
+            "question": "Bambini, (voi - sapere) …………………….. che salire sul treno fermo è assolutamente vietato.",
+            "solution": "sappiate"
+        },
+        {
+            "question": "ciao",
+            "solution": "ciao"
+        },
+        {
+            "question": "svf",
+            "solution": "fvs"
+        }
+    ]
+}

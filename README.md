@@ -36,6 +36,8 @@ Start the Flask server:
 Open [http://localhost:5000](http://localhost:3000) to view it in your browser.
 
 ### DB
+!!! Optionally, there is also a demodb (app.db) in the repository.
+
 Navigate to the backend directory:
 #### `cd backend`
 Initialize the database
