@@ -1,9 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 function Chatbot() {
-    const [messages, setMessages] = useState([])
-    const [input, setInput] = useState('')
-    const [isWaitingForResponse, setIsWaitingForResponse] = useState(false)
+    const [messages, setMessages] = useState([]);
+    const [input, setInput] = useState('');
+    const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
+
+    useEffect(() => {
+        try {
+            const savedMessages = localStorage.getItem('chatMessages');
+            if (savedMessages) {
+                setMessages(JSON.parse(savedMessages));
+            }
+        } catch (error) {
+            console.error("Failed to load messages from localStorage", error);
+        }
+    }, []);
+
+    useEffect(() => {
+        try {
+            if (messages.length > 0) {
+                localStorage.setItem('chatMessages', JSON.stringify(messages));
+            }
+        } catch (error) {
+            console.error("Failed to save messages to localStorage", error);
+        }
+    }, [messages]);
 
     const fetchWithTimeout = (url, options, timeout = 60000) => {
         return Promise.race([
@@ -12,7 +33,7 @@ function Chatbot() {
                 setTimeout(() => reject(new Error('Request timed out')), timeout)
             )
         ]);
-    }
+    };
 
     const handleSendMessage = async () => {
         if (!input.trim()) return;
@@ -27,7 +48,7 @@ function Chatbot() {
         }
 
         setInput('');
-    }
+    };
 
     const sendChatbotMessage = async (message) => {
         try {
@@ -73,7 +94,7 @@ function Chatbot() {
             console.error('Error:', error);
             setMessages((prev) => [...prev, { sender: 'bot', text: 'Error communicating with server.' }]);
         }
-    }
+    };
 
     const handleUserResponse = async (userResponse) => {
         try {
@@ -118,15 +139,16 @@ function Chatbot() {
     const handleRestartBackend = () => {
         fetch('http://127.0.0.1:5000/api/restart-backend', { method: 'POST' });
         setTimeout(() => {
+            localStorage.removeItem('chatMessages');
             window.location.reload();
         }, 1);
-    }
+    };
 
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
             handleSendMessage();
         }
-    }
+    };
 
     return (
         <div className="flex flex-col h-screen bg-gray-100">
@@ -182,7 +204,7 @@ function Chatbot() {
                 </button>
             </div>
         </div>
-    )
+    );
 }
 
-export default Chatbot
+export default Chatbot;
