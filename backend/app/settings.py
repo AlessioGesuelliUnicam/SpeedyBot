@@ -10,7 +10,9 @@ DEFAULT_CONFIG = {
     "OPENAI_API_KEY": "your_openai_api_key",
     "OPENAI_MODEL": "gpt-4",
     "OLLAMA_BASE_URL": "http://localhost:11434/api/generate",
-    "OLLAMA_MODEL": "llama3"
+    "OLLAMA_MODEL": "llama3",
+    "HUGGINGFACE_API_TOKEN": "your_huggingface_api_token",
+    "HUGGINGFACE_MODEL": "mistral-7b"
 }
 
 def load_settings():
