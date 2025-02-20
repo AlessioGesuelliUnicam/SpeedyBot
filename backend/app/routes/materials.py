@@ -5,6 +5,7 @@ from werkzeug.utils import secure_filename
 from app.models import ExerciseType, ExerciseWithImage
 from app import db
 from datetime import datetime
+from pathlib import Path
 
 materials_bp = Blueprint('materials', __name__)
 
@@ -44,7 +45,7 @@ def get_materials_with_images():
 @materials_bp.route('/upload-image-exercise', methods=['POST'])
 def upload_image_exercise():
     """
-    Upload a new image-based exercise.
+    Upload a new image-based exercise with dynamic folder handling.
     """
     try:
         file = request.files.get('file')
@@ -56,15 +57,24 @@ def upload_image_exercise():
             return jsonify({"error": "Missing data. Please provide file, exercise_type, description_it, and description_en."}), 400
 
         exercise_type_id = int(exercise_type_id)
-        subfolder = 'uploads'
-        filename = secure_filename(file.filename)
-        upload_folder = os.path.join(current_app.config['UPLOAD_FOLDER'], subfolder)
-        filepath = os.path.join(upload_folder, filename)
-        os.makedirs(upload_folder, exist_ok=True)
-        file.save(filepath)
 
+        # Recupera il nome dell'esercizio dal database
+        exercise = ExerciseType.query.get(exercise_type_id)
+        if not exercise:
+            return jsonify({"error": "Exercise type not found."}), 404
+
+        exercise_folder = exercise.exerciseType.lower().replace(" ", "_")  # Normalizza il nome della cartella
+        upload_folder = Path(current_app.root_path) / "static" / "uploads" / exercise_folder
+        upload_folder.mkdir(parents=True, exist_ok=True)  # Crea la cartella se non esiste
+
+        # Salva il file in modo sicuro
+        filename = secure_filename(file.filename)
+        file_path = upload_folder / filename
+        file.save(file_path)
+
+        # Salva il percorso nel database (in formato UNIX per compatibilità)
         new_entry = ExerciseWithImage(
-            file_path=filepath,
+            file_path=file_path.relative_to(Path(current_app.root_path) / "static").as_posix(),
             exercise_type_id=exercise_type_id,
             description_it=description_it,
             description_en=description_en,
