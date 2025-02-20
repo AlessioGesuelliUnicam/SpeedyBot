@@ -40,11 +40,13 @@ def create_app():
     from app.chatbot import chatbot_bp
     from app.routes.exercise_type import exercise_type_bp
     from app.routes.materials import materials_bp  # Importa il blueprint dei materiali
+    from app.settings import settings_bp  # Importa il blueprint delle impostazioni
 
     app.register_blueprint(upload_bp)
     app.register_blueprint(chatbot_bp)
     app.register_blueprint(exercise_type_bp)
     app.register_blueprint(materials_bp, url_prefix='/api')  # Registra il blueprint dei materiali con prefisso '/api'
+    app.register_blueprint(settings_bp)  # Ora accessibile a `/api/settings`
 
     # Route per servire i file dalla cartella uploads
     @app.route('/uploads/<filename>')

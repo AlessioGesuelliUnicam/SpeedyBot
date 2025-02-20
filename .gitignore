@@ -11,6 +11,7 @@ backend/__pycache__/
 backend/*.pyc
 backend/env/
 backend/.env
+backend/app/config.json
 
 # Ignora file di test e copertura
 **/coverage

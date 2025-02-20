@@ -1,6 +1,27 @@
 import React, { useState, useEffect } from 'react';
 
 function Chatbot() {
+    const [selectedModel, setSelectedModel] = useState('ollama'); // Modello predefinito
+
+    const sendModelChangeRequest = async (model) => {
+        try {
+            const response = await fetch('http://127.0.0.1:5000/set-model', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ model })
+            });
+            const data = await response.json();
+            alert(data.message);
+        } catch (error) {
+            console.error("Error changing model:", error);
+        }
+    };
+
+    const handleModelChange = (event) => {
+        const model = event.target.value;
+        setSelectedModel(model);
+        sendModelChangeRequest(model);
+    };
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
@@ -152,6 +173,19 @@ function Chatbot() {
 
     return (
         <div className="flex flex-col h-screen bg-gray-100">
+            <div className="p-4 bg-white shadow">
+                <label className="text-gray-700 font-bold">Select Model:</label>
+                <select
+                    value={selectedModel}
+                    onChange={handleModelChange}
+                    className="ml-2 p-2 border border-gray-300 rounded"
+                >
+                    <option value="ollama">Ollama (LLaMA 3)</option>
+                    <option value="gpt">OpenAI GPT</option>
+                    <option value="huggingface">HuggingFace</option>
+                </select>
+            </div>
+
             <div className="flex-grow p-4 overflow-y-auto">
                 <div className="space-y-4">
                     {messages.map((msg, index) => (

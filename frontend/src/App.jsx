@@ -6,6 +6,7 @@ import ExerciseType from "./components/ExerciseType"
 import Home from "./components/Home"
 import ImageExercisesManager from "./components/ImageExercisesManager"
 import TextExercisesManager from "./components/TextExercisesManager"
+import Settings from "./components/Settings";
 function App() {
     return (
         <Router>
@@ -21,6 +22,7 @@ function App() {
                         <Route path="/ExerciseType" element={<ExerciseType/>}/>
                         <Route path="/exercises_with_images_manager" element={<ImageExercisesManager/>}/>
                         <Route path="/text_exercise_manager" element={<TextExercisesManager/>}/>
+                        <Route path="/settings" element={<Settings/>}/>
                     </Routes>
                 </div>
             </div>

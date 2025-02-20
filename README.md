@@ -46,6 +46,8 @@ Apply existing migrations to create the database schema:
 #### `flask db upgrade`
 
 ### Frontend
+Navigate to the frontend directory:
+#### `cd frontend`
 Install the dependecies:
 #### `npm install`
 Start the frontend:

@@ -4,17 +4,59 @@ from app.models import ExerciseType, ExerciseWithImage
 from app import db
 from .utils import load_documents, search_documents
 from .ollama_client import OllamaAPI
+from .openAI_client import OpenAIAPI
+from .huggingface_client import HuggingFaceAPI
 from docx import Document
 import PyPDF2
 
 chatbot_bp = Blueprint('chatbot', __name__)
 
 # Initialize the Ollama client
-ollama_client = OllamaAPI()
+#ollama_client = OllamaAPI()
+
+# Initialize the OpenAI client
+#gpt_client = OpenAIAPI()
+
+# Initialize the HuggingFace client
+#huggingface_client = HuggingFaceAPI()
+
 
 DOCUMENTS = load_documents()
 
 exercise_cache = None
+
+# Client disponibili
+llm_clients = {
+    "ollama": OllamaAPI(),
+    "gpt": OpenAIAPI(),
+    "huggingface": HuggingFaceAPI()
+}
+
+# Stato globale per il modello selezionato
+class ModelManager:
+    def __init__(self):
+        self.selected_model = "ollama"  # Modello di default
+
+    def set_model(self, model_name):
+        if model_name in llm_clients:
+            self.selected_model = model_name
+            return f"Modello impostato su {model_name}"
+        return "Modello non riconosciuto"
+
+    def get_client(self):
+        return llm_clients[self.selected_model]
+
+model_manager = ModelManager()
+
+@chatbot_bp.route('/set-model', methods=['POST'])
+def set_model():
+    """ API per cambiare il modello LLM """
+    data = request.json
+    model_name = data.get("model", "").lower()
+    response = model_manager.set_model(model_name)
+    return jsonify({"message": response})
+
+    llm_client = model_manager.get_client()
 
 def fetch_exercise_types(use_cache=True):
     global exercise_cache
@@ -105,22 +147,29 @@ def handle_exception(e, message="An error occurred."):
     print(f"[Error] {message}: {e}")
     return jsonify({"error": message, "details": str(e)}), 500
 
+
 def extract_json_from_response(response):
     try:
-        matches = re.findall(r"\{.*?\}", response, re.DOTALL)
-        for match in matches:
-            try:
-                json_content = json.loads(match)
-                if "intent" in json_content and "response" in json_content:
-                    return json_content
-            except json.JSONDecodeError:
-                continue
-        raise ValueError("No valid JSON containing intent and response found.")
+        # Se la risposta è un dizionario, estrai il contenuto dal campo corretto
+        if isinstance(response, dict):
+            response_content = response.get("choices", [{}])[0].get("message", {}).get("content", "{}")
+        else:
+            response_content = response  # Se è già una stringa, usala direttamente
+
+        # Converti la stringa JSON in un dizionario Python
+        json_content = json.loads(response_content)
+
+        # Verifica se i campi essenziali sono presenti
+        if "intent" in json_content and "response" in json_content:
+            return json_content
+        else:
+            raise ValueError("JSON ricevuto non contiene 'intent' o 'response'.")
+
     except Exception as e:
-        print(f"[extract_json_from_response] Error: {e}")
+        print(f"[extract_json_from_response] Errore: {e}")
         return {
             "intent": "general",
-            "response": "I didn't understand your question.",
+            "response": "Non ho capito bene. Puoi ripetere o specificare meglio?",
             "exercise_type": None,
         }
 
@@ -159,7 +208,11 @@ def identify_intent(user_message, learning_context=None):
         }}
         """
         print(f"[identify_intent] Sending prompt to LLM: {prompt}")
-        raw_response = ollama_client.send_request(prompt)
+        #raw_response = ollama_client.send_request(prompt)
+        #raw_response = gpt_client.send_request(prompt)
+        #raw_response = huggingface_client.send_request(prompt)
+        llm_client = model_manager.get_client()
+        raw_response = response = llm_client.send_request(prompt)
         print(f"[identify_intent] Raw response from LLM: {raw_response}")
 
         parsed_response = extract_json_from_response(raw_response)
@@ -277,8 +330,11 @@ def handle_learning_request(user_message, documents):
     """
 
     try:
-
-        llm_response = ollama_client.send_request(prompt)
+        llm_client = model_manager.get_client()
+        #llm_response = ollama_client.send_request(prompt)
+        #llm_response = gpt_client.send_request(prompt)
+        #llm_response = huggingface_client.send_request(prompt)
+        llm_response = llm_client.send_request(prompt)
 
         return {"message": llm_response}
 
@@ -340,8 +396,11 @@ def evaluate_with_llm(user_response, expected_response):
     """
 
     try:
-
-        response = ollama_client.send_request(prompt)
+        llm_client = model_manager.get_client()
+        #response = ollama_client.send_request(prompt)
+        #response = gpt_client.send_request(prompt)
+        #response = huggingface_client.send_request(prompt)
+        response = llm_client.send_request(prompt)
 
         return json.loads(response)  # Parse the returned JSON
 

@@ -7,3 +7,4 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = 'app/static/uploads'
     SECRET_KEY = 'your-secret-key'
+
