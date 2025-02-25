@@ -41,55 +41,6 @@ def get_materials_with_images():
         print(f"[get_materials_with_images] Error: {e}")
         return jsonify({"error": "Failed to fetch materials."}), 500
 
-
-@materials_bp.route('/upload-image-exercise', methods=['POST'])
-def upload_image_exercise():
-    """
-    Upload a new image-based exercise with dynamic folder handling.
-    """
-    try:
-        file = request.files.get('file')
-        exercise_type_id = request.form.get('exercise_type')
-        description_it = request.form.get('description_it')
-        description_en = request.form.get('description_en')
-
-        if not all([file, exercise_type_id, description_it, description_en]):
-            return jsonify({"error": "Missing data. Please provide file, exercise_type, description_it, and description_en."}), 400
-
-        exercise_type_id = int(exercise_type_id)
-
-        # Recupera il nome dell'esercizio dal database
-        exercise = ExerciseType.query.get(exercise_type_id)
-        if not exercise:
-            return jsonify({"error": "Exercise type not found."}), 404
-
-        exercise_folder = exercise.exerciseType.lower().replace(" ", "_")  # Normalizza il nome della cartella
-        upload_folder = Path(current_app.root_path) / "static" / "uploads" / exercise_folder
-        upload_folder.mkdir(parents=True, exist_ok=True)  # Crea la cartella se non esiste
-
-        # Salva il file in modo sicuro
-        filename = secure_filename(file.filename)
-        file_path = upload_folder / filename
-        file.save(file_path)
-
-        # Salva il percorso nel database (in formato UNIX per compatibilità)
-        new_entry = ExerciseWithImage(
-            file_path=file_path.relative_to(Path(current_app.root_path) / "static").as_posix(),
-            exercise_type_id=exercise_type_id,
-            description_it=description_it,
-            description_en=description_en,
-            upload_date=datetime.utcnow()
-        )
-        db.session.add(new_entry)
-        db.session.commit()
-
-        return jsonify({"message": "File uploaded successfully."}), 201
-
-    except Exception as e:
-        print(f"[upload_image_exercise] Error: {e}")
-        return jsonify({"error": "Failed to upload image exercise."}), 500
-
-
 @materials_bp.route('/materials/<int:material_id>', methods=['DELETE'])
 def delete_material(material_id):
     """
@@ -112,7 +63,6 @@ def delete_material(material_id):
     except Exception as e:
         print(f"[delete_material] Error: {e}")
         return jsonify({"error": "Failed to delete material.", "details": str(e)}), 500
-
 
 # === Metodi per gli esercizi testuali ===
 @materials_bp.route('/materials-text', methods=['GET'])

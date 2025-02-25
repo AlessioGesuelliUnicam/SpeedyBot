@@ -1,5 +1,7 @@
 import json
-from flask import Blueprint, request, jsonify, current_app
+import os
+
+from flask import Blueprint, request, jsonify, current_app, url_for
 from werkzeug.utils import secure_filename
 from pathlib import Path
 from app.models import ExerciseWithImage, ExerciseType
@@ -20,48 +22,63 @@ def get_exercise_types_with_image():
 
 # Upload di un'immagine per un esercizio
 @upload_bp.route('/upload-image-exercise', methods=['POST'])
-def upload_file():
-    file = request.files.get('file')
-    exercise_type_id = request.form.get('exercise_type')
-    description_it = request.form.get('description_it')
-    description_en = request.form.get('description_en')
+def upload_image_exercise():
+    """
+    Upload a new image-based exercise with cross-platform support.
+    """
+    try:
+        file = request.files.get('file')
+        exercise_type_id = request.form.get('exercise_type')
+        description_it = request.form.get('description_it')
+        description_en = request.form.get('description_en')
 
-    if not all([file, exercise_type_id, description_it, description_en]):
-        return jsonify({"error": "Missing data."}), 400
+        if not all([file, exercise_type_id, description_it, description_en]):
+            return jsonify({"error": "Missing data. Please provide file, exercise_type, description_it, and description_en."}), 400
 
-    exercise_type_id = int(exercise_type_id)
-    subfolder = 'animals' if exercise_type_id == 1 else 'signals' if exercise_type_id == 2 else None
-    if not subfolder:
-        return jsonify({"error": "Invalid exercise_type_id."}), 400
+        exercise_type_id = int(exercise_type_id)
 
-    # Creazione di un nome file sicuro con timestamp
-    timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S')
-    filename = f"{timestamp}_{secure_filename(file.filename)}"
+        # Recupera il nome dell'esercizio dal database
+        exercise = ExerciseType.query.get(exercise_type_id)
+        if not exercise:
+            return jsonify({"error": "Exercise type not found."}), 404
 
-    # Definizione del percorso della cartella di upload
-    upload_folder = Path(current_app.config['UPLOAD_FOLDER']) / subfolder
-    upload_folder.mkdir(parents=True, exist_ok=True)  # Crea la cartella se non esiste
+        # Normalizza il nome della cartella (percorso dinamico)
+        exercise_folder = exercise.exerciseType.lower().replace(" ", "_")
+        upload_folder = os.path.join(current_app.root_path, "static", "uploads", exercise_folder)
+        os.makedirs(upload_folder, exist_ok=True)  # Crea la cartella se non esiste
 
-    filepath = upload_folder / filename  # Percorso completo del file
-    file.save(filepath)  # Salva il file
+        # Genera il nome del file con timestamp per evitare sovrascritture
+        timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+        filename = f"{timestamp}_{secure_filename(file.filename)}"
 
-    # Salva il percorso relativo nel database
-    file_path = filepath.relative_to(current_app.root_path)
+        # Percorso assoluto dove salvare il file
+        file_path = os.path.join(upload_folder, filename)
+        file.save(file_path)
 
-    new_entry = ExerciseWithImage(
-        file_path=str(file_path),  # Converte in stringa per il database
-        exercise_type_id=exercise_type_id,
-        description_it=description_it,
-        description_en=description_en,
-        upload_date=datetime.utcnow()
-    )
-    db.session.add(new_entry)
-    db.session.commit()
+        # ✅ Costruiamo direttamente il percorso relativo in formato UNIX
+        relative_path = f"static/uploads/{exercise_folder}/{filename}"
 
-    print(f"✅ File salvato in: {filepath}")
-    print(f"✅ Percorso salvato nel database: {file_path}")
+        print(f"✅ [DEBUG] Percorso salvato nel DB: {relative_path}")  # Debug
 
-    return jsonify({"message": "File uploaded successfully"}), 201
+        # Salva nel database
+        new_entry = ExerciseWithImage(
+            file_path=relative_path,  # Percorso già corretto
+            exercise_type_id=exercise_type_id,
+            description_it=description_it,
+            description_en=description_en,
+            upload_date=datetime.utcnow()
+        )
+        db.session.add(new_entry)
+        db.session.commit()
+
+        return jsonify({
+            "message": "File uploaded successfully.",
+            "file_url": url_for('static', filename=relative_path, _external=True)
+        }), 201
+
+    except Exception as e:
+        print(f"[upload_image_exercise] Error: {e}")
+        return jsonify({"error": "Failed to upload image exercise.", "details": str(e)}), 500
 
 # Upload di un esercizio testuale
 @upload_bp.route('/upload-text-exercise', methods=['POST'])
