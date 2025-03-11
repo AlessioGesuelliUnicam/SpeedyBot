@@ -37,12 +37,12 @@ SETTINGS = load_settings()
 # Creazione del Blueprint per l'API Flask
 settings_bp = Blueprint("settings", __name__)
 
-@settings_bp.route("/api/settings", methods=["GET"])
+@settings_bp.route("/settings", methods=["GET"])
 def get_settings():
     """Restituisce le impostazioni attuali."""
     return jsonify(load_settings())
 
-@settings_bp.route("/api/settings", methods=["POST"])
+@settings_bp.route("/settings", methods=["POST"])
 def update_settings():
     """Aggiorna le impostazioni nel file JSON."""
     new_config = request.json
