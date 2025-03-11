@@ -46,7 +46,7 @@ def create_app():
     app.register_blueprint(chatbot_bp)
     app.register_blueprint(exercise_type_bp)
     app.register_blueprint(materials_bp, url_prefix='/api')  # Registra il blueprint dei materiali con prefisso '/api'
-    app.register_blueprint(settings_bp)  # Ora accessibile a `/api/settings`
+    app.register_blueprint(settings_bp, url_prefix='/api')  # Ora accessibile a `/api/settings`
 
     # Route per servire i file dalla cartella uploads
     @app.route('/uploads/<filename>')
