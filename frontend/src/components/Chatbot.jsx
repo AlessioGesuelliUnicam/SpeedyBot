@@ -11,7 +11,7 @@ function Chatbot() {
                 body: JSON.stringify({ model })
             });
             const data = await response.json();
-            alert(data.message);
+            //alert(data.message);
         } catch (error) {
             console.error("Error changing model:", error);
         }
@@ -118,43 +118,7 @@ function Chatbot() {
     };
 
     const handleUserResponse = async (userResponse) => {
-        try {
-            const response = await fetchWithTimeout('http://127.0.0.1:5000/evaluate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ response: userResponse }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch');
-            }
-
-            const data = await response.json();
-
-            if (data.feedback) {
-                const feedbackMessage = {
-                    sender: 'bot',
-                    text: data.feedback,
-                };
-                setMessages((prev) => [...prev, feedbackMessage]);
-            }
-
-            if (data.next_question) {
-                const questionMessage = {
-                    sender: 'bot',
-                    text: data.next_question,
-                    image: data.image || null,
-                };
-                setMessages((prev) => [...prev, questionMessage]);
-                setIsWaitingForResponse(true);
-            } else {
-                setIsWaitingForResponse(false);
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            setMessages((prev) => [...prev, { sender: 'bot', text: 'Error evaluating response.' }]);
-            setIsWaitingForResponse(false);
-        }
+        await sendChatbotMessage(userResponse);
     };
 
     const handleRestartBackend = () => {
