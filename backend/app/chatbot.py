@@ -112,7 +112,9 @@ class GlobalStateManager:
                     return None
 
                 return {
-                    "question": f"Osserva l'immagine e rispondi: {image_entry.description_it}",
+                    "question": "Look at the image and answer: "
+
+                           f"\"Wie sagt man '{image_entry.description_en}' auf Italienisch?\"",
                     "expected_response": image_entry.description_it.strip().lower(),
                     "image_url": image_entry.file_path
                 }
@@ -253,7 +255,8 @@ def identify_intent(user_message, learning_context=None):
 
         2. If the user explicitly mentions an exercise type, set intent to "exercise".
         3. If intent is unclear, respond with "clarify" and suggest asking a more specific question.
-
+        
+        You are a chatbot designed to respond in this format only.
         Respond strictly in this JSON format:
         {{
             "intent": "general|learn|exercise|clarify",
@@ -564,15 +567,18 @@ def handle_image_exercise(exercise):
     if not image_entry:
         raise ValueError("No images available for this exercise.")
 
+    # Store the first image URL globally to ensure consistency
+    global_state_manager.current_image_url = url_for('static', filename=image_entry.file_path.split('static/')[-1], _external=True)
+
     global_state_manager.set_current_question({
         "expected_response": image_entry.description_it,
-        "image_url": image_entry.file_path,
+        "image_url": global_state_manager.current_image_url,  # Use stored image
         "animal_name": image_entry.description_en,
     })
 
     return {
         "message": f"Look at the image and answer: \"Wie sagt man '{image_entry.description_en}' auf Italienisch?\"",
-        "image": url_for('static', filename=image_entry.file_path.split('static/')[-1], _external=True),
+        "image": global_state_manager.current_image_url,
     }
 
 def handle_textual_exercise(exercise_type):
@@ -609,7 +615,7 @@ def chatbot():
 
             expected_response = current_question.get('expected_response', '').strip()
 
-            # 🔴 Incrementiamo subito il numero di tentativi
+            # Incrementa il numero di tentativi
             global_state_manager.increment_attempts()
             attempts = global_state_manager.attempts
 
@@ -618,28 +624,31 @@ def chatbot():
 
             # Valutiamo la risposta con l'LLM
             evaluation = evaluate_with_llm(user_message, expected_response)
-
             if evaluation.get("correct", False):
                 feedback = f"✔️ Corretto! {evaluation.get('feedback', '')}"
+                print(f"[DEBUG] Risposta corretta:  {feedback}")
                 global_state_manager.reset_attempts()
-
                 print("[evaluate_response_internal] Risposta corretta. Cercando prossima domanda...")
-
                 next_question = global_state_manager.prepare_next_question()
+                response_data = {"feedback": feedback}
 
                 if next_question and "question" in next_question:
                     global_state_manager.set_current_question(next_question)
-                    return jsonify({
-                        "feedback": feedback,
-                        "next_question": f"{next_question['question']}"
-                    })
+                    # Non mostrare l'immagine precedente
+                    response_data["next_question"] = next_question["question"]
+                    # Includere l'immagine solo per la nuova domanda
+                    if "image_url" in next_question:
+                        response_data["image"] = url_for('static',
+                                                         filename=next_question["image_url"].split('static/')[-1],
+                                                         _external=True)
 
-                print("[evaluate_response_internal] Nessuna domanda rimanente. Terminando esercizio.")
-                global_state_manager.reset_current_exercise()
-                return jsonify({
-                    "feedback": feedback,
-                    "message": "Hai completato l'esercizio! Se vuoi farne un altro, scegline uno nuovo dal menu."
-                })
+                else:
+                    print("[evaluate_response_internal] Nessuna domanda rimanente. Terminando esercizio.")
+                    global_state_manager.reset_current_exercise()
+                    response_data[
+                        "message"] = "Hai completato l'esercizio! Se vuoi farne un altro, scegline uno nuovo dal menu."
+
+                return jsonify(response_data)
 
             if attempts < 3:
                 print(f"[DEBUG] Tentativo {attempts}/3. Restando sulla stessa domanda.")
@@ -658,12 +667,15 @@ def chatbot():
 
             if next_question and "question" in next_question:
                 global_state_manager.set_current_question(next_question)
-                return jsonify({
+                response_data = {
                     "feedback": feedback,
-                    "next_question": f"Prossima domanda: {next_question['question']}",
-                    "image": url_for('static', filename=next_question["image_url"].split('static/')[-1],
-                                     _external=True) if next_question.get("image_url") else None
-                })
+                    "next_question": next_question["question"],
+                }
+                if "image_url" in next_question:
+                    response_data["image"] = url_for('static', filename=next_question["image_url"].split('static/')[-1],
+                                                     _external=True)
+
+                return jsonify(response_data)
 
             print(
                 "[evaluate_response_internal] Nessuna domanda rimanente dopo tentativi esauriti. Terminando esercizio.")

@@ -84,33 +84,36 @@ function Chatbot() {
             }
 
             const data = await response.json();
+            const messagesToAdd = [];
 
             if (data.message || data.feedback) {
-                const botMessage = {
+                messagesToAdd.push({
                     sender: 'bot',
                     text: data.feedback || data.message,
-                    image: data.image || null,
-                };
-                setMessages((prev) => [...prev, botMessage]);
+                });
             }
 
             if (data.next_question) {
-                const questionMessage = {
+                messagesToAdd.push({
                     sender: 'bot',
                     text: data.next_question,
-                    image: data.image || null,
-                };
-                setMessages((prev) => [...prev, questionMessage]);
+                });
                 setIsWaitingForResponse(true);
             } else if (data.question) {
-                const questionMessage = {
+                messagesToAdd.push({
                     sender: 'bot',
                     text: data.question,
-                    image: data.image || null,
-                };
-                setMessages((prev) => [...prev, questionMessage]);
+                });
                 setIsWaitingForResponse(true);
             }
+
+            // Associa l'immagine solo all'ultimo messaggio della lista, se esiste
+            if (data.image && messagesToAdd.length > 0) {
+                messagesToAdd[messagesToAdd.length - 1].image = data.image;
+            }
+
+            setMessages((prev) => [...prev, ...messagesToAdd]);
+
         } catch (error) {
             console.error('Error:', error);
             setMessages((prev) => [...prev, { sender: 'bot', text: 'Error communicating with server.' }]);
