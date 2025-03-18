@@ -56,6 +56,17 @@ Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
 
 
+# Start the project after installation
+Navigate to the backend directory:
+#### `cd backend`
+Start the Flask server:
+#### `python run.py`
+Navigate to the frontend directory:
+#### `cd frontend`
+Start the frontend:
+#### `npm start`
+Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+
 ## Next steps
 * Improve the reliability of the LLM
 * LLM integration to vary exercise feedback responses
