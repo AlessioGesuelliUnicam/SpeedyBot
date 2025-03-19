@@ -7,7 +7,10 @@ function Settings() {
         OLLAMA_BASE_URL: '',
         OLLAMA_MODEL: '',
         HUGGINGFACE_API_TOKEN: '',
-        HUGGINGFACE_MODEL: ''
+        HUGGINGFACE_MODEL: '',
+        AZURE_API_KEY: '',
+        AZURE_RESOURCE_NAME: '',
+        AZURE_DEPLOYMENT_NAME: ''
     });
 
     const [isLoading, setIsLoading] = useState(true);
@@ -130,6 +133,36 @@ function Settings() {
                         type="text"
                         name="HUGGINGFACE_MODEL"
                         value={settings.HUGGINGFACE_MODEL}
+                        onChange={handleChange}
+                        className="w-full border p-2"
+                    />
+                </div>
+                <div>
+                    <label className="block font-semibold">Azure API Key</label>
+                    <input
+                        type="text"
+                        name="AZURE_API_KEY"
+                        value={settings.AZURE_API_KEY}
+                        onChange={handleChange}
+                        className="w-full border p-2"
+                    />
+                </div>
+                <div>
+                    <label className="block font-semibold">Azure Resource Name</label>
+                    <input
+                        type="text"
+                        name="AZURE_RESOURCE_NAME"
+                        value={settings.AZURE_RESOURCE_NAME}
+                        onChange={handleChange}
+                        className="w-full border p-2"
+                    />
+                </div>
+                <div>
+                    <label className="block font-semibold">Azure Deployment Name</label>
+                    <input
+                        type="text"
+                        name="AZURE_DEPLOYMENT_NAME"
+                        value={settings.AZURE_DEPLOYMENT_NAME}
                         onChange={handleChange}
                         className="w-full border p-2"
                     />
