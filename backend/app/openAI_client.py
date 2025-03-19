@@ -55,3 +55,4 @@ class OpenAIAPI:
                 "intent": "general",
                 "exercise_type": None
             }
+

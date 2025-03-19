@@ -12,8 +12,17 @@ DEFAULT_CONFIG = {
     "OLLAMA_BASE_URL": "http://localhost:11434/api/generate",
     "OLLAMA_MODEL": "llama3",
     "HUGGINGFACE_API_TOKEN": "your_huggingface_api_token",
-    "HUGGINGFACE_MODEL": "mistral-7b"
+    "HUGGINGFACE_MODEL": "mistral-7b",
+    "AZURE_OPENAI_API_KEY": "your_azure_api_key",
+    "AZURE_RESOURCE_NAME": "your_azure_resource_name",
+    "AZURE_DEPLOYMENT_NAME": "your_azure_deployment_name",
+    "AZURE_API_VERSION": "2024-10-21"
 }
+
+# Parametri per Azure OpenAI
+DEFAULT_CONFIG.update({
+
+})
 
 def load_settings():
     """Carica le impostazioni dal file JSON."""

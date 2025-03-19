@@ -149,6 +149,7 @@ function Chatbot() {
                 >
                     <option value="ollama">Ollama (LLaMA 3)</option>
                     <option value="gpt">OpenAI GPT</option>
+                    <option value="azure_openai">AzureOpenAI</option>
                     <option value="huggingface">HuggingFace</option>
                 </select>
             </div>
