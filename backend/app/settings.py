@@ -7,16 +7,16 @@ CONFIG_FILE = os.path.join(os.path.dirname(__file__), "config.json")
 
 # Valori predefiniti se il file non esiste
 DEFAULT_CONFIG = {
-    "OPENAI_API_KEY": "your_openai_api_key",
-    "OPENAI_MODEL": "gpt-4",
-    "OLLAMA_BASE_URL": "http://localhost:11434/api/generate",
-    "OLLAMA_MODEL": "llama3",
+    "AZURE_OPENAI_API_KEY": "your_azure_api_key",
+    "AZURE_DEPLOYMENT_NAME": "your_azure_deployment_name",
+    "AZURE_RESOURCE_NAME": "your_azure_resource_name",
+    "AZURE_API_VERSION": "2024-10-21",
     "HUGGINGFACE_API_TOKEN": "your_huggingface_api_token",
     "HUGGINGFACE_MODEL": "mistral-7b",
-    "AZURE_OPENAI_API_KEY": "your_azure_api_key",
-    "AZURE_RESOURCE_NAME": "your_azure_resource_name",
-    "AZURE_DEPLOYMENT_NAME": "your_azure_deployment_name",
-    "AZURE_API_VERSION": "2024-10-21"
+    "OLLAMA_BASE_URL": "http://localhost:11434/api/generate",
+    "OLLAMA_MODEL": "llama3",
+    "OPENAI_API_KEY": "your_openai_api_key",
+    "OPENAI_MODEL": "gpt-4"
 }
 
 # Parametri per Azure OpenAI
