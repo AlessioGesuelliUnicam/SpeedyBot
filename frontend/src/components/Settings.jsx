@@ -8,7 +8,7 @@ function Settings() {
         OLLAMA_MODEL: '',
         HUGGINGFACE_API_TOKEN: '',
         HUGGINGFACE_MODEL: '',
-        AZURE_API_KEY: '',
+        AZURE_OPENAI_API_KEY: '',
         AZURE_RESOURCE_NAME: '',
         AZURE_DEPLOYMENT_NAME: ''
     });
@@ -141,8 +141,8 @@ function Settings() {
                     <label className="block font-semibold">Azure API Key</label>
                     <input
                         type="text"
-                        name="AZURE_API_KEY"
-                        value={settings.AZURE_API_KEY}
+                        name="AZURE_OPENAI_API_KEY"
+                        value={settings.AZURE_OPENAI_API_KEY}
                         onChange={handleChange}
                         className="w-full border p-2"
                     />
