@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, url_for, current_app
 import json, re, os, random
 from app.models import ExerciseType, ExerciseWithImage
 from app import db
+from .AzureOpenAIClient import AzureOpenAIClient
 from .utils import load_documents, search_documents
 from .ollama_client import OllamaAPI
 from .openAI_client import OpenAIAPI
@@ -29,7 +30,8 @@ exercise_cache = None
 llm_clients = {
     "ollama": OllamaAPI(),
     "gpt": OpenAIAPI(),
-    "huggingface": HuggingFaceAPI()
+    "huggingface": HuggingFaceAPI(),
+    "azure_openai": AzureOpenAIClient()
 }
 
 # Stato globale per il modello selezionato
@@ -54,6 +56,7 @@ def set_model():
     data = request.json
     model_name = data.get("model", "").lower()
     response = model_manager.set_model(model_name)
+    print(model_name)
     return jsonify({"message": response})
 
     llm_client = model_manager.get_client()
