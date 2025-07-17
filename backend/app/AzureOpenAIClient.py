@@ -16,7 +16,10 @@ class AzureOpenAIClient:
             "Content-Type": "application/json"
         }
         payload = {
-            "messages": [{"role": "user", "content": prompt}],
+            "messages": [
+                {"role": "system", "content": "Rispondi solo con JSON valido. Non usare markdown, backtick o testo descrittivo fuori dal JSON."},
+                {"role": "user", "content": prompt}
+            ],
             "temperature": 0.7,
             "max_tokens": 100
         }
@@ -30,8 +33,15 @@ class AzureOpenAIClient:
 
     def convert_to_ollama_format(self, raw_response):
         """Converte la risposta di Azure OpenAI in formato JSON compatibile con Ollama."""
+        import re
+        raw_text = raw_response.get("choices", [{}])[0].get("message", {}).get("content", "")
+
+        # Rimuove i backtick e estrae solo il JSON puro se presente
+        match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", raw_text, re.DOTALL)
+        if match:
+            raw_text = match.group(1)
+
         try:
-            raw_text = raw_response.get("choices", [{}])[0].get("message", {}).get("content", "")
             response_json = json.loads(raw_text)
             return response_json if isinstance(response_json, dict) else {
                 "response": raw_text,
